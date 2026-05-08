@@ -42,7 +42,7 @@ registro_alertas_detalladas = []
 ultima_alerta_ip = None  # IP de la última alerta
 
 # Umbrales
-PING_UMBRAL = 1  # Número de pings para activar alerta
+PING_UMBRAL = 5  # Número de pings para activar alerta
 TCP_UMBRAL = 5
 UDP_UMBRAL = 5
 TIEMPO_UMBRAL = 10 # Tiempo en segundos para considerar pings excesivos
@@ -430,7 +430,7 @@ def iniciar_sniffer():
     print("[+] Sniffer ICMP/ARP activo. Esperando paquetes...")
     try:
         # Usar el Event para detener el sniffer
-        sniff(filter="icmp or arp", prn=detectar_paquete, store=0, stop_filter=lambda x: stop_event.is_set())
+        sniff(filter="icmp or arp or tcp or udp", prn=detectar_paquete, store=0, stop_filter=lambda x: stop_event.is_set())
     except PermissionError:
         print("[ERROR] Debes ejecutar este script como administrador.")
 
@@ -732,14 +732,14 @@ def obtener_mac(ip_objetivo):
         # respuesta[0][1] es el primer paquete recibido
         return respuesta[0][1].hwsrc 
     else:
-        return None
+        return "Desconocida"
 
 def fabricante_por_mac(mac):
     if not mac:
         return "N/A"
     try:
         # Limpiamos la MAC para la API
-        prefijo = mac.upper().replace(":", "")[:6]
+        prefijo = mac.upper().replace(":", "").replace("-", "")[:6]
         url = f"https://api.macvendors.com/{prefijo}"
         
         # Respetamos el límite de la API gratuita
